@@ -1,0 +1,25 @@
+name: CI
+on: [push]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    container: archlinux/base
+    steps:
+      - name: Update System
+        run: pacman --noconfirm -Syu
+      - name: Install dependencies
+        run: pacman --noconfirm -S gtest cmake make binutils gcc
+      - name: Checkout repository
+        uses: actions/checkout@master
+      - name: Configure with CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCONTEXT_SWITCH_BUILD_TESTS=ON
+      - name: Build with CMake
+        working-directory: build
+        run: cmake --build . --target context-switch-unit-test
+      - name: Run unit tests
+        working-directory: build/test
+        run: ./context-switch-unit-test --gtest_color=yes
